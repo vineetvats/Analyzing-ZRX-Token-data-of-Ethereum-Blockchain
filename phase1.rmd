@@ -1,0 +1,89 @@
+---
+title: "ZRX"
+author: "vineet"
+date: "October 10, 2018"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+@ authors: Vineet Vats (vxv180008) and Shruti Jaiswal (sxj170027)<br>
+The Ethereum project is a blockchain platform, and our data comes from there. Although Ethereum started in 2015, most tokens have been created since 2016. As such, tokens have different starting dates, and their data starts from that initial date.
+Our Data has four Attributes:
+FromNodeId - Selling the Token,  
+ToNodeId- Buying the Token,  
+Unixdate- Data of transaction in UNIX time,  
+TokenAmount- Token amount in the Transaction,  
+
+
+Here we are reading the data from the text file networkzrxTX.txt
+```{r}
+zrxtoken<-read.table(file="D:/networkzrxTX.txt",header=F,sep=" ")
+summary(zrxtoken)
+```
+
+Here we will print the outliers.
+```{r}
+outliersvals <-zrxtoken[ which(zrxtoken$V4>=1e+27), ]
+outliersvals
+```
+Excluding the above Outliers from the data and updating zrxtoken.
+```{r}
+zrxtoken <- zrxtoken[ which(zrxtoken$V4<=1e+27), ]
+colnames(zrxtoken)<-c("FromNodeId","ToNodeId","Unixdate","TokenAmount")
+summary(zrxtoken)
+```
+
+
+Here we are taking the count of Users who are buying the token. We are Storing these attributes in a table CountOfBuy.
+```{r}
+Buytoken <-c(zrxtoken[,2])
+CountOfBuy<-as.data.frame(table(Buytoken))
+colnames(CountOfBuy)<-c("UserId","Frequency")
+summary(CountOfBuy)
+```
+
+Here we are taking the count of the frequency of the user buying token.This plot below shows that how many times a user buys a token.
+```{r}
+DoubleCountOfBuy<-as.data.frame(table(CountOfBuy$Frequency))
+colnames(DoubleCountOfBuy)<-c("Count_buy","Count_user")
+summary(DoubleCountOfBuy)
+barplot(DoubleCountOfBuy$Count_user,names.arg = DoubleCountOfBuy$Count_buy, las=2, xlab="user ", ylab="Count of user", xlim=c(1,20), col="grey", main = "Count of Buyers")
+```
+
+Here we are taking the count of Users who are Selling the token. We are Storing these attributes in a table CountOfSell.
+```{r}
+SellToken<-c(zrxtoken[,1])
+CountOfSell<-as.data.frame(table(SellToken))
+colnames(CountOfSell)<-c("UserId","Frequency")
+summary(CountOfSell)
+```
+
+Here we are taking the count of the frequency of the user Selling token.This plot shows that how many times a user Sells a token.
+```{r}
+DoubleCountOfSell<-as.data.frame(table(CountOfSell$Frequency))
+colnames(DoubleCountOfSell)<-c("count_sell","count_user")
+summary(DoubleCountOfSell)
+barplot(DoubleCountOfSell$count_user,names.arg = DoubleCountOfSell$count_sell, las=2, xlab="User", ylab="count user", xlim=c(1,20), col="grey", offset(1), main = "Count of Sellers")
+
+```
+
+
+
+Fitting the poisson Distribution for  Users who are Buying the token. The fitdistrplus package which we are using here is a general package that aims at helping the fit of univariate parametric distributions to censored or non-censored data.
+```{r}
+library(fitdistrplus)
+No.pois<-fitdist(DoubleCountOfBuy[,2], distr = "pois")
+plot(No.pois)
+```
+ <br>Fitting the poisson Distribution for Users who are selling their token.
+```{r}
+No.pois<-fitdist(DoubleCountOfSell[,2], distr = "pois")
+plot(No.pois)
+```
+<br>Hence, We can see that the Data shows a Poisson Distribution as it fits in that distribution.

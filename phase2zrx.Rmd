@@ -1,0 +1,205 @@
+---
+title: "Phase2"
+author: "vineet"
+date: "October 22, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+@ authors: Vineet Vats (vxv180008) and Shruti Jaiswal (sxj170027)<br>
+The Ethereum project is a blockchain platform, and our data comes from there. Although Ethereum started in 2015, most tokens have been created since 2016. As such, tokens have different starting dates, and their data starts from that initial date.
+Our Data has four Attributes:
+FromNodeId - Selling the Token,  <br>
+ToNodeId- Buying the Token,  <br>
+Unixdate- Data of transaction in UNIX time, <br> 
+TokenAmount- Token amount in the Transaction, <br>
+The second dataset has  attributes: <br>
+Date <br>
+Open <br>
+High <br>
+Low <br>
+Close <br>
+Volume <br>
+MarketCap <br>
+
+
+Reading the zrx Token Data and removing the outliers from the data zrxtoken.
+```{r}
+library(tidyverse)
+library(sqldf)
+zrxtoken<-read.table(file="D:/networkzrxTX.txt",header=F,sep=" ")
+zrxtoken <- zrxtoken[ which(zrxtoken$V4<=1e+27), ]
+colnames(zrxtoken)<-c("FromNodeId","ToNodeId","Unixdate","TokenAmount")
+summary(zrxtoken)
+options(max.print = 20)
+
+
+```
+
+Converting the date from Unix time format to Date format.
+
+```{r}
+
+zrxtoken$Unixdate<- as.Date(as.POSIXct(zrxtoken$Unixdate, origin="1970-01-01"))
+zrxtoken$Unixdate
+
+```
+
+
+
+Dividing the data into 25 disjoint layers. This is first part of dividing the data into layers and finding insights out of the data.
+```{r}
+layer1<- zrxtoken[which(zrxtoken$TokenAmount>1e+24),]
+layer2<- zrxtoken[which(zrxtoken$TokenAmount<=1e+24 & zrxtoken$TokenAmount>1e+23),]
+layer3<- zrxtoken[which(zrxtoken$TokenAmount<=1e+23 & zrxtoken$TokenAmount>1e+22),]
+layer4<- zrxtoken[which(zrxtoken$TokenAmount<=1e+22 & zrxtoken$TokenAmount>1e+21),]
+layer5<- zrxtoken[which(zrxtoken$TokenAmount<=1e+21 & zrxtoken$TokenAmount>1e+20),]
+layer6<- zrxtoken[which(zrxtoken$TokenAmount<=1e+20 & zrxtoken$TokenAmount>1e+19),]
+layer7<- zrxtoken[which(zrxtoken$TokenAmount<=1e+19 & zrxtoken$TokenAmount>1e+18),]
+laye8<- zrxtoken[which(zrxtoken$TokenAmount<=1e+18 & zrxtoken$TokenAmount>1e+17),]
+layer9<- zrxtoken[which(zrxtoken$TokenAmount<=1e+17 & zrxtoken$TokenAmount>1e+16),]
+layer10<- zrxtoken[which(zrxtoken$TokenAmount<=1e+16 & zrxtoken$TokenAmount>1e+15),]
+layer11<- zrxtoken[which(zrxtoken$TokenAmount<=1e+15 & zrxtoken$TokenAmount>1e+14),]
+layer12<- zrxtoken[which(zrxtoken$TokenAmount<=1e+14 & zrxtoken$TokenAmount>1e+13),]
+layer13<- zrxtoken[which(zrxtoken$TokenAmount<=1e+13 & zrxtoken$TokenAmount>1e+12),]
+layer14<- zrxtoken[which(zrxtoken$TokenAmount<=1e+12 & zrxtoken$TokenAmount>1e+11),]
+layer15<- zrxtoken[which(zrxtoken$TokenAmount<=1e+11 & zrxtoken$TokenAmount>1e+10),]
+layer16<- zrxtoken[which(zrxtoken$TokenAmount<=1e+10 & zrxtoken$TokenAmount>1e+9),]
+layer17<- zrxtoken[which(zrxtoken$TokenAmount<=1e+9 & zrxtoken$TokenAmount>1e+8),]
+layer18<- zrxtoken[which(zrxtoken$TokenAmount<=1e8 & zrxtoken$TokenAmount>1e+7),]
+layer19<- zrxtoken[which(zrxtoken$TokenAmount<=1e+7 & zrxtoken$TokenAmount>1e+6),]
+layer20<- zrxtoken[which(zrxtoken$TokenAmount<=1e+6 & zrxtoken$TokenAmount>1e+5),]
+layer21<- zrxtoken[which(zrxtoken$TokenAmount<=1e+5 & zrxtoken$TokenAmount>1e+4),]
+layer22<- zrxtoken[which(zrxtoken$TokenAmount<=1e+4 & zrxtoken$TokenAmount>1e+3),]
+layer23<- zrxtoken[which(zrxtoken$TokenAmount<=1e+3 & zrxtoken$TokenAmount>1e+2),]
+layer24<- zrxtoken[which(zrxtoken$TokenAmount<=1e+2 & zrxtoken$TokenAmount>1e+1),]
+layer25<- zrxtoken[which(zrxtoken$TokenAmount<1e+1),]
+
+
+```
+
+
+Merging Layers so that the number of observations present in each layer is comparable.(I have done this based on correlation factor which will come later in the report.)
+```{r}
+layer1<- zrxtoken[which(zrxtoken$TokenAmount>1e+22),]
+layer2<- zrxtoken[which(zrxtoken$TokenAmount<=1e+22 & zrxtoken$TokenAmount>1e+21),]
+layer3<- zrxtoken[which(zrxtoken$TokenAmount<=1e+21 & zrxtoken$TokenAmount>1e+20),]
+
+layer4<- zrxtoken[which(zrxtoken$TokenAmount<=1e+20 & zrxtoken$TokenAmount>1e+19),]
+layer5<- zrxtoken[which(zrxtoken$TokenAmount<=1e+19 & zrxtoken$TokenAmount>1e+15),]
+layer6<- zrxtoken[which(zrxtoken$TokenAmount<=1e+15 & zrxtoken$TokenAmount>1e+5),]
+layer7<- zrxtoken[which(zrxtoken$TokenAmount<=1e+5),]
+
+
+
+
+```
+
+
+Plotting the frequency of the Transaction happening on a particular date according to a particular layer.[This is Layer 3 in which the token amount is greater than 1e+19 and smaller than 1e+20]. This is our Best case.
+
+```{r}
+
+Flayer_1 <-c(layer4[,3])
+summary(Flayer_1)
+count_layer1<-as.data.frame(table(Flayer_1))
+colnames(count_layer1)<-c("Date","Frequency")
+count_layer1$Date<- as.Date(as.POSIXct(count_layer1$Date, origin="1970-01-01"))
+summary(count_layer1)
+
+```
+
+Here in this step we are reading the Token prices data.
+```{r}
+
+
+pricezrx<-read.table(file="D:/zrx.txt",header=F,sep="\t")
+colnames(pricezrx)<-c("Date","Open","High","Low","Close","Volume","MarketCap")
+summary(pricezrx)
+
+```
+
+
+Selecting Date and Opening price from the tokenprices dataset and converting the date to the same format as in zrxToken.
+```{r}
+pricezrx<-pricezrx[c(1,2)]
+pricezrx$Date<-as.Date(pricezrx$Date,format="%m/%d/%Y")
+pricezrx$Date<- as.Date(as.POSIXct(pricezrx$Date, origin="1970-01-01"))
+summary(pricezrx)
+```
+
+
+SQL commands join Zrx Token Data and Zrx prices data based on the Date which is present in both the Datasets.
+```{r}
+
+df3<-sqldf("SELECT f.Date, p.Open, f.Frequency FROM count_layer1 f INNER JOIN pricezrx p WHERE f.Date=p.Date")
+summary(df3)
+
+```
+
+Applying Pearson Correlation on the data.
+```{r}
+cor.test(df3$Open, df3$Frequency, method = "pearson")
+plot(df3$Date,df3$Open, main= "Plot between Date and Opening price of token for Layer4(Best Case)", xlab="Date", ylab="Opening Price")
+plot(df3$Date,df3$Frequency, main= "Plot between Date and Frequency of TokenAmount for Layer4(Best Case) ", xlab="Date", ylab="No. of Transactions")
+
+
+```
+
+Scatterplot of Open Price Versus No. of Transactions using Pearson Correlation
+```{r}
+
+library("ggpubr")
+ggscatter(df3, x = "Open", y = "Frequency", 
+          add = "reg.line", conf.int = TRUE, 
+          cor.coef = TRUE, cor.method = "pearson",
+          xlab = "Open Price", ylab = "No. of Transactions", main="Pearson Correlation")
+```
+
+Applying Spearman Correlation on the data and generating scatterplot of Open Price Versus No. of Transactions using Spearman Correlation
+```{r}
+cor.test(df3$Open, df3$Frequency, method = "spearman")
+ggscatter(df3, x = "Open", y = "Frequency", 
+          add = "reg.line", conf.int = TRUE, 
+          cor.coef = TRUE, cor.method = "spearman",
+          xlab = "Open Price", ylab = "No. of Transactions")
+```
+
+
+To show the difference between a correlated layer and non correlated layer here we have also plotted worst case when pearson correlation factor is very close to zero.
+```{r}
+
+Flayer_1 <-c(layer6[,3])
+#summary(Flayer_1)
+count_layer1<-as.data.frame(table(Flayer_1))
+#View(count_layer1)
+colnames(count_layer1)<-c("Date","Frequency")
+count_layer1$Date<- as.Date(as.POSIXct(count_layer1$Date, origin="1970-01-01"))
+#summary(count_layer1)
+
+pricetenx<-read.table(file="D:/zrx.txt",header=F,sep="\t")
+colnames(pricetenx)<-c("Date","Open","High","Low","Close","Volume","MarketCap")
+#summary(pricetenx)
+
+pricetenx<-pricetenx[c(1,2)]
+pricetenx$Date<-as.Date(pricetenx$Date,format="%m/%d/%Y")
+pricetenx$Date<- as.Date(as.POSIXct(pricetenx$Date, origin="1970-01-01"))
+#summary(pricetenx)
+
+df3<-sqldf("SELECT f.Date, p.Open, f.Frequency FROM count_layer1 f INNER JOIN pricetenx p WHERE f.Date=p.Date")
+#summary(df3)
+
+cor.test(df3$Open, df3$Frequency, method = "pearson")
+plot(df3$Date,df3$Open, main= "Plot between Date and Opening price of token", xlab="Date", ylab="Opening Price")
+plot(df3$Date,df3$Frequency, main= "Plot between Date and Frequency of TokenAmount ", xlab="Date", ylab="No. of Transactions")
+
+
+```
+
+Hence, In this Question firstly We divided the layers into 25 equal parts and then to make the observations comparable with each other, we have merged the layers into 7 different sized layers. We found that observations having token amount in range 1e+19 and 1e+20 are correlating the most with the opening price of the token.
+The second observation is that the Pearson's Correlation coefficient is 0.70 and the Spearman's Correlation coefficient is o.77.
