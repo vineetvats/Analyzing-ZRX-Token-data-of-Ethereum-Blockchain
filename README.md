@@ -1,5 +1,5 @@
 # Analyzing-ZRX-Token-data-of-Ethereum-Blockchain
-Data Description.
+# Data Description.
 Our data files (shared on elearning/Ethereum datasets) contain two primary groups: token network edge files, and token price files. The Ethereum project is a blockchain platform, and our data comes from there. Although Ethereum started in 2015, most tokens have been created since 2016. As such, tokens have different starting dates, and their data starts from that initial date.
 
 Token edge files have this row structure: fromNodeID\ttoNodeID\tunixTime\ttokenAmount\r\n
@@ -15,18 +15,18 @@ Price files have no extensions, but they are text based. If you open them with a
 The price data is taken from https://coinmarketcap.com/. Open and close are the prices of the specific token at the given date. Volume and MarketCap give total bought/sold tokens and market valuation at the date.
 
 
-Preprocessing step
+# Preprocessing step
 In each token, there may be outlier amounts which are bigger than the total amount of the token. Locate these extreme outliers, if exist, and filter them out. If there are many of these (>30), investigate how many users are included in these transactions.
 
 Update 10/04/2018 See this news as an example of why we have these outliers: (https://cryptoslate.com/batchoverflow-exploit-creates-trillions-of-ethereum-tokens/)
 
-Quality
+# Quality
 Perhaps the most important aspect of this project is the presentation. Your report should explain each step in your solution, and provide good visuals. You may use the ggplot2library to draw plots. Data science is the art of finding and presenting actionable insights from data. This report may be a good part of your job application portfolio, so please do your best. Your output will be a doc/pdf or html file. RMD files will not be accepted, because we will have token data files access in the code. A viewer may not have these files.
 
-Question 1 
+# Question 1 
 Find the distribution of how many times a user 1 - buys, 2 - sells a token. Which discrete distribution type fits these distributions best? Estimate distribution parameters.
 
-Question 2
+# Question 2
 How can we create layers of transactions with increasing amounts? This descriptive statistic is similar to bin selection in histograms. For example, we could choose layer1 as those transactions that involve 0.01×maxt in amount. Find a good value for the number of layers and justify your choice.
 
 Once you create layers, you can compute a feature in each layer. An example feature is the number of transactions, another one is the number of unique buyers. As each edge has a unix timestamp, it is easy to compute the edge time to a date. For example, 1294226315 is equivalent to 01/05/2011 @ 11:18am (UTC). See the website https://www.unixtimestamp.com/index.php for unix time conversion. R has functions to compute dates from unix time stamps as well. This way, for a given day you can find all layer transactions in that day.
@@ -34,7 +34,7 @@ Once you create layers, you can compute a feature in each layer. An example feat
 For example, you can say on 10/12/2018 there were 25 transactions in layer 1. The price of token on that date was 3.2$. For each day in a token’s history, you can then correlate price vs feature in time.
 
 Find an algorithm to compute the correlation of price data with each of the layers (hint: start by looking at Pearson correlation).
-Question 3
+# Question 3
 We denote the token price in dolar as Pt for the tth day. Simple price return is given as Pt−Pt−1Pt−1.
 
 Extract at least three features from the token network at day t−1 and create a multiple linear regression model to explain price return on day t. In this task, you can choose to extract features from a single layer computed in project 1, or you can use all network data. If you use a layer approach, you can build the model on data from a single layer only.
